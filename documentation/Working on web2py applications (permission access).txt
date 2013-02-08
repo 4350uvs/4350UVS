@@ -1,0 +1,25 @@
+Since `nginx` and `uwsgi` runs on user `www-data` (which is created by `nginx` when installing it), we want our app `http://[your pulic DNS]/` run on user `www-data` too. That's why we put web2py in `www-data`'s home folder `/home/www-data/`
+
+But this brings permission problems. The following 2 commands would help.
+
+Note: suppose your current user is `ubuntu`. `whoami` can tell you the current user.
+
+## add `ubuntu` to `www-data` group
+
+`sudo usermod -a -G www-data ubuntu`
+
+`www-data` is a user AND a group as well, so we first add `ubuntu` to the same group as www-data does.
+
+## give same group members' access to `www-data`'s files
+
+`sudo chmod g+rw /home/www-data/ -R`
+
+Then, we give group members of `www-data` the read and write access to `/home/www-data/` and its subdirectories and files. So `www-data` (web2py apps run on) or `ubuntu` can read and write (we2py admin uses it) files that `ubuntu` or `www-data`owned. Anyone in group `www-data` can read and write `/home/www-data/`.
+
+## Note
+
+When using `/admin/`, there will some errors. The most common problem is that `www-data` does have `read or/and write access`. You can easily solve this problem by
+
+```
+sudo chown -R www-data:www-data /home/www-data
+```

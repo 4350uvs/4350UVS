@@ -1,0 +1,43 @@
+Don't forget to use `sudo` sometimes...
+
+And read the permission stuff here: https://github.com/umbruner/4350/wiki/Working-on-web2py-applications-(permission-access-stuff)
+
+# install git
+
+apt-get -y install git
+
+# 4350api
+
+```
+cd /home/www-data/web2py/applications
+git clone https://github.com/4350uvs/4350api.git
+cd 4350api
+mkdir languages
+```
+
+**check**
+
+`http://[your puclic dns]:8274/`
+
+# 4350app
+
+```
+cd /home/www-data/web2py/applications
+git clone https://github.com/4350uvs/4350app.git
+cd 4350app
+mkdir languages
+```
+
+**check**
+
+`http://[your puclic dns]/`
+
+# then...
+
+you can `cd` to those 2 apps to do our real work...
+
+The proper directory structure is actually like this: http://i.imgur.com/NTtNSJd.png But git doesn't commit empty directories...
+
+# notes
+
+`mkdir languages`: why? This empty directory is needed by `web2py`. But `git` doesn't allow commit empty folders.

@@ -1,0 +1,165 @@
+Note: use `sudo` if not user `root`
+
+# Prerequisites
+
+Ubuntu 12.04 installed on an EC2 instance & SSH access & knowing public DNS
+
+# Download & setup web2py
+
+**Create /home/www-data/ and `cd` it**
+
+```
+cd /home; mkdir www-data; cd www-data
+```
+
+**Download `web2py` source to `/home/www-data/web2py/`**
+
+```
+wget http://web2py.com/examples/static/web2py_src.zip
+apt-get -y install unzip
+unzip web2py_src.zip
+rm web2py_src.zip
+```
+
+**Change owner of `/home/www-data/web2py/` to `www-data`**
+
+```
+chown -R www-data:www-data web2py
+cd /home/www-data/web2py
+```
+
+**Set up web2py admin password**
+
+replace `$PW`
+
+`sudo -u www-data python -c "from gluon.main import save_password; save_password('$PW',443)"`
+
+
+
+# Install nginx
+
+```
+add-apt-repository ppa:nginx/stable
+apt-get update
+apt-get -y install nginx
+```
+
+**Check:**
+
+Make sure port 80 is open (Dan: Under security groups in AWS make an inbound rule for http. Click add rule and then apply.)
+
+Start nginx: `sudo /etc/init.d/nginx start`
+
+```
+http://[your ec2 public dns]/index.lighttpd.html
+```
+
+# Install WSGI
+
+```
+add-apt-repository  ppa:uwsgi/release
+apt-get update
+apt-get -y install uwsgi uwsgi-plugin-python
+```
+
+# Configure WSGI
+Create a file `/etc/uwsgi/apps-available/web2py.xml` containing:
+
+```
+<uwsgi>
+    <plugin>python</plugin>
+    <socket>127.0.0.1:9001</socket>
+    <pythonpath>/home/www-data/web2py/</pythonpath>
+    <app mountpoint="/">
+        <script>wsgihandler</script>
+    </app>
+</uwsgi>
+```
+
+Link `web2py.xml` to `apps-enabled`:
+
+```
+ln -s /etc/uwsgi/apps-available/web2py.xml /etc/uwsgi/apps-enabled/web2py.xml
+```
+
+# Configure nginx
+
+**Support HTTPS**
+
+HTTPS allows access to web2py admin outside `localhost`
+
+```bash
+mkdir /etc/nginx/ssl
+cd /etc/nginx/ssl
+openssl genrsa -out web2py.key 1024
+openssl req -batch -new -key web2py.key -out web2py.csr
+openssl x509 -req -days 1780 -in web2py.csr -signkey web2py.key -out web2py.crt
+```
+
+**nginx config file**
+
+Create a file `/etc/nginx/sites-available/web2py` containing:
+
+```
+server {
+        listen 80;
+
+        location / {
+               uwsgi_pass      127.0.0.1:9001;
+               include         uwsgi_params;
+               uwsgi_param     UWSGI_SCHEME $scheme;
+               uwsgi_param     SERVER_SOFTWARE    nginx/$nginx_version;
+        }
+}
+ 
+server {
+        listen 443;
+
+        ssl                     on;
+        ssl_certificate         /etc/nginx/ssl/web2py.crt;
+        ssl_certificate_key     /etc/nginx/ssl/web2py.key;
+
+        location / {
+                uwsgi_pass      127.0.0.1:9001;
+                include         uwsgi_params;
+                uwsgi_param     UWSGI_SCHEME $scheme;
+                uwsgi_param     SERVER_SOFTWARE    nginx/$nginx_version;
+        }
+ 
+}
+```
+
+Link `web2py` to apps-enabled:
+```
+ln -s /etc/nginx/sites-available/web2py /etc/nginx/sites-enabled/web2py
+```
+
+# Start uwsgi & Reload nginx
+
+```
+sudo /etc/init.d/uwsgi start
+sudo /etc/init.d/nginx reload
+```
+
+**Check:**
+
+Make sure in your `EC2` `Security Groups`, TCP ports `80` and `443` are open.
+
+```
+http://[you ec2 public dns]/
+https://[you ec2 public dns]/
+```
+
+You will be redirect to `/welcome/default/index` for both `HTTP` and `HTTPS`
+
+# Next
+
+Run a single web2py application on one domain:  
+https://github.com/umbruner/4350/wiki/Run-a-single-web2py-application-on-one-domain
+
+***
+
+Reference: http://www.web2pyslices.com/slice/show/1495/updated-uwsgi-nginx-script-for-ubuntu-1110
+
+
+See the install.sh shell script in the "Scripts" folder.
