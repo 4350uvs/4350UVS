@@ -2,6 +2,10 @@
 
 This repo serves as a **wiki & documentation** place. You can see other repos here: https://github.com/4350uvs
 
+## Wiki
+
+https://github.com/4350uvs/4350UVS/wiki
+
 ## Trello
 
 https://trello.com/board/comp-4350-group-3-project/50eced7047069aa864000b32
