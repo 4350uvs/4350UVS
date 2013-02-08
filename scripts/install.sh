@@ -4,7 +4,7 @@
 #
 # Installation Script for Ubuntu, etc
 #
-# Version 1
+# Version 1 - umbruner
 #
 ########################################
 
