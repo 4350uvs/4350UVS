@@ -62,5 +62,3 @@ sudo /etc/init.d/nginx reload
 
 echo "Finish rest of installation guide";
 read -sp "Press [Enter] key to continue... "
-
-
